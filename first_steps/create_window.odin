@@ -1,4 +1,4 @@
-package main
+package first_steps
 
 import "core:fmt"
 import gl "vendor:OpenGL"
