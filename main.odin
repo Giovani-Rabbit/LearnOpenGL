@@ -43,6 +43,9 @@ main :: proc() {
 	assert(window != nil, "Failed to create GLFW window")
 	defer glfw.DestroyWindow(window)
 
+	glfw.SetWindowSizeLimits(window, SCR_WIDTH, SCR_HEIGHT, SCR_WIDTH, SCR_HEIGHT)
+	glfw.SetWindowSize(window, SCR_WIDTH, SCR_HEIGHT) // dispara o "resize" que aplica os limites
+
 	glfw.MakeContextCurrent(window)
 	glfw.SetFramebufferSizeCallback(window, framebuffer_size_callback) // sempre que o valor de window for alterado, vai chamar framebuffer_size_callback
 	gl.load_up_to(GL_MAJOR_VERSION, GL_MINOR_VERSION, glfw.gl_set_proc_address)
@@ -52,16 +55,17 @@ main :: proc() {
 	info_log: [512]u8
 
 	VBO: u32
+	VAO: u32
+	gl.GenVertexArrays(1, &VAO)
+	gl.BindVertexArray(VAO)
+
 	gl.GenBuffers(1, &VBO) // declaramos um buffer VBO com ID 1
 	gl.BindBuffer(gl.ARRAY_BUFFER, VBO) // falamos qual o tipo desse buffer
 	// Ao aplicar raw_data(), você descarta temporariamente os metadados de tamanho e segurança, obtendo apenas o endereço de memória do primeiro elemento
 	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertex), raw_data(&vertex), gl.STATIC_DRAW) // copia os dados do vertex para o buffer(GPU)
 
-	VAO: u32
-	gl.GenVertexArrays(1, &VAO)
-	gl.BindVertexArray(VAO)
-	gl.BindBuffer(gl.ARRAY_BUFFER, VAO)
-	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertex), raw_data(&vertex), gl.STATIC_DRAW)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), 0)
+	gl.EnableVertexAttribArray(0)
 
 	vertex_shader: u32
 	vertex_shader = gl.CreateShader(gl.VERTEX_SHADER)
