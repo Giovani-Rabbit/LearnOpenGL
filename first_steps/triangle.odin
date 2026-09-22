@@ -1,28 +1,8 @@
-package main
+package first_steps
 
 import "core:fmt"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
-
-SCR_WIDTH :: 800
-SCR_HEIGHT :: 600
-
-GL_MAJOR_VERSION :: 3
-GL_MINOR_VERSION :: 3
-
-vertex_shader_source: cstring = `#version 330 core
-layout (location = 0) in vec3 aPos;
-void main()
-{
-   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-}`
-
-fragment_shader_source: cstring = `#version 330 core
-out vec4 FragColor;
-void main()
-{
-   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-}`
 
 main :: proc() {
 	if !glfw.Init() {
@@ -69,11 +49,13 @@ main :: proc() {
 
 	vertex_shader: u32
 	vertex_shader = gl.CreateShader(gl.VERTEX_SHADER)
+	vertex_shader_source := #load("shaders/triangle/vertex_shader.glsl", cstring) // vai ler o shader em tempo de compilacao
 	gl.ShaderSource(vertex_shader, 1, &vertex_shader_source, nil)
 	gl.CompileShader(vertex_shader)
 
 	fragment_shader: u32
 	fragment_shader = gl.CreateShader(gl.FRAGMENT_SHADER)
+	fragment_shader_source := #load("shaders/triangle/fragment_shader.glsl", cstring)
 	gl.ShaderSource(fragment_shader, 1, &fragment_shader_source, nil)
 	gl.CompileShader(fragment_shader)
 
@@ -108,14 +90,4 @@ main :: proc() {
 	gl.DeleteVertexArrays(1, &VAO)
 	gl.DeleteBuffers(1, &VBO)
 	gl.DeleteProgram(shader_program)
-}
-
-process_input :: proc(window: glfw.WindowHandle) {
-	if glfw.GetKey(window, glfw.KEY_ESCAPE) == glfw.PRESS {
-		glfw.SetWindowShouldClose(window, true)
-	}
-}
-
-framebuffer_size_callback :: proc "c" (window: glfw.WindowHandle, width, height: i32) {
-	gl.Viewport(0, 0, width, height)
 }
