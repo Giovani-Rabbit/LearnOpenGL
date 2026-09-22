@@ -1,8 +1,14 @@
-package first_steps
+package main
 
 import "core:fmt"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
+
+SCR_WIDTH :: 800
+SCR_HEIGHT :: 600
+
+GL_MAJOR_VERSION :: 3
+GL_MINOR_VERSION :: 3
 
 vertex_shader_source: cstring = `#version 330 core
 layout (location = 0) in vec3 aPos;
@@ -37,26 +43,28 @@ main :: proc() {
 	assert(window != nil, "Failed to create GLFW window")
 	defer glfw.DestroyWindow(window)
 
+	glfw.SetWindowSizeLimits(window, SCR_WIDTH, SCR_HEIGHT, SCR_WIDTH, SCR_HEIGHT)
+	glfw.SetWindowSize(window, SCR_WIDTH, SCR_HEIGHT) // dispara o "resize" que aplica os limites
+
 	glfw.MakeContextCurrent(window)
+	gl.load_up_to(GL_MAJOR_VERSION, GL_MINOR_VERSION, glfw.gl_set_proc_address)
 	glfw.SetFramebufferSizeCallback(window, framebuffer_size_callback) // sempre que o valor de window for alterado, vai chamar framebuffer_size_callback
-	gl.load_up_to(GL_MAJOR_VERSION, GL_MINOR_VERSION, glfw.gl_set_proc_address) // carrega os ponteiros do openGL
 
 	vertex := [?]f32{-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0}
 	success: i32
 	info_log: [512]u8
 
 	VBO: u32
+	VAO: u32
 	gl.GenBuffers(1, &VBO) // declaramos um buffer VBO com ID 1
+	gl.GenVertexArrays(1, &VAO)
+
+	gl.BindVertexArray(VAO)
 	gl.BindBuffer(gl.ARRAY_BUFFER, VBO) // falamos qual o tipo desse buffer
 	// Ao aplicar raw_data(), você descarta temporariamente os metadados de tamanho e segurança, obtendo apenas o endereço de memória do primeiro elemento
 	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertex), raw_data(&vertex), gl.STATIC_DRAW) // copia os dados do vertex para o buffer(GPU)
-	gl.DeleteBuffers(1, &VBO) // apos enviar os dados para a GPU podemos remover os valores da RAM
 
-	VAO: u32
-	gl.GenVertexArrays(1, &VAO)
-	gl.BindVertexArray(VAO)
-	// Dizer ao VAO como interpretar o VBO
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), 0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 3 * size_of(f32), 0) // dizendo como deve ser interpretado os dados brutos
 	gl.EnableVertexAttribArray(0)
 
 	vertex_shader: u32
@@ -96,4 +104,18 @@ main :: proc() {
 		glfw.SwapBuffers(window)
 		glfw.PollEvents()
 	}
+
+	gl.DeleteVertexArrays(1, &VAO)
+	gl.DeleteBuffers(1, &VBO)
+	gl.DeleteProgram(shader_program)
+}
+
+process_input :: proc(window: glfw.WindowHandle) {
+	if glfw.GetKey(window, glfw.KEY_ESCAPE) == glfw.PRESS {
+		glfw.SetWindowShouldClose(window, true)
+	}
+}
+
+framebuffer_size_callback :: proc "c" (window: glfw.WindowHandle, width, height: i32) {
+	gl.Viewport(0, 0, width, height)
 }
