@@ -1,4 +1,4 @@
-package main
+package triangle
 
 import "core:fmt"
 import gl "vendor:OpenGL"
@@ -84,31 +84,8 @@ main :: proc() {
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 6 * size_of(f32), 3 * size_of(f32))
 	gl.EnableVertexAttribArray(1)
 
-	vertex_shader: u32
-	vertex_shader = gl.CreateShader(gl.VERTEX_SHADER)
-	vertex_shader_source := #load("vertex_shader.glsl", cstring) // vai ler o shader em tempo de compilacao
-	gl.ShaderSource(vertex_shader, 1, &vertex_shader_source, nil)
-	gl.CompileShader(vertex_shader)
-
-	fragment_shader: u32
-	fragment_shader = gl.CreateShader(gl.FRAGMENT_SHADER)
-	fragment_shader_source := #load("fragment_shader.glsl", cstring)
-	gl.ShaderSource(fragment_shader, 1, &fragment_shader_source, nil)
-	gl.CompileShader(fragment_shader)
-
-	shader_program: u32
-	shader_program = gl.CreateProgram()
-	gl.AttachShader(shader_program, vertex_shader)
-	gl.AttachShader(shader_program, fragment_shader)
-	gl.LinkProgram(shader_program)
-
-	gl.GetProgramiv(shader_program, gl.LINK_STATUS, &success)
-	if success == 0 {
-		gl.GetProgramInfoLog(shader_program, 512, nil, &info_log[0])
-	}
-
-	gl.DeleteShader(vertex_shader)
-	gl.DeleteShader(fragment_shader)
+	shader, s_ok := shader_init("vertex_shader.glsl", "fragment_shader.glsl")
+	if !s_ok do panic("Unable to load shaders")
 
 	for !glfw.WindowShouldClose(window) {
 		process_input(window)
@@ -116,7 +93,7 @@ main :: proc() {
 		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		gl.UseProgram(shader_program)
+		shader_use(shader)
 		gl.BindVertexArray(VAO)
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
@@ -126,7 +103,7 @@ main :: proc() {
 
 	gl.DeleteVertexArrays(1, &VAO)
 	gl.DeleteBuffers(1, &VBO)
-	gl.DeleteProgram(shader_program)
+	gl.DeleteProgram(shader.id)
 }
 
 process_input :: proc(window: glfw.WindowHandle) {
