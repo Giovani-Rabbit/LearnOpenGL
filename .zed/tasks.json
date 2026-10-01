@@ -1,0 +1,8 @@
+[
+  // configura um build para debug
+  {
+    "label": "build triangle",
+    "command": "odin build . -debug -out:triangle_debug",
+    "cwd": "$ZED_WORKTREE_ROOT/first_steps/triangle", // local onde ficara o arquivo compilado
+  },
+]

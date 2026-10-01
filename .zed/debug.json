@@ -1,0 +1,10 @@
+[
+  {
+    "label": "Triangle Debug",
+    "adapter": "CodeLLDB",
+    "build": "build triangle", // faca um build antes de rodar o debug
+    "request": "launch",
+    "program": "$ZED_WORKTREE_ROOT/first_steps/triangle/triangle_debug", // define o local do codigo compilado
+    "cwd": "$ZED_WORKTREE_ROOT/first_steps/triangle", // define onde ficam os arquivos do programa
+  },
+]
