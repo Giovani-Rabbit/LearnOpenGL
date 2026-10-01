@@ -1,6 +1,7 @@
 package triangle
 
 import "core:fmt"
+import "core:os"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
 
